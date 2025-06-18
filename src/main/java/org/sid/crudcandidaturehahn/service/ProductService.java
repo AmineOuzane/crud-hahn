@@ -1,0 +1,20 @@
+package org.sid.crudcandidaturehahn.service;
+
+import org.sid.crudcandidaturehahn.dto.ProductDTO;
+import org.sid.crudcandidaturehahn.dto.ResponseProductDTO;
+
+import java.util.List;
+
+/**
+ * ProductService interface for managing products.
+ * Provides methods to create, retrieve, update, and delete products.
+ */
+
+public interface ProductService {
+
+     ResponseProductDTO createProduct(ProductDTO productDTO);
+     ProductDTO getProductById(Long id);
+     List<ProductDTO> getAllProducts();
+     ProductDTO updateProduct(Long id, ProductDTO productDTO);
+     void deleteProduct(Long id);
+}
