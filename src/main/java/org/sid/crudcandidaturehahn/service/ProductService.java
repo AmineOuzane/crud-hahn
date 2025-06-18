@@ -13,8 +13,8 @@ import java.util.List;
 public interface ProductService {
 
      ResponseProductDTO createProduct(ProductDTO productDTO);
-     ProductDTO getProductById(Long id);
+     ProductDTO getProductById(String id);
      List<ProductDTO> getAllProducts();
-     ProductDTO updateProduct(Long id, ProductDTO productDTO);
-     void deleteProduct(Long id);
+     ProductDTO updateProduct(String id, ProductDTO productDTO);
+     void deleteProduct(String id);
 }

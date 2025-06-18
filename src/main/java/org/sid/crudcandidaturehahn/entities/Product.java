@@ -14,8 +14,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class Product {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id
+    private String id;
     @Column(name = "name", nullable = false)
     private String name;
     @Column(name = "description", nullable = false)

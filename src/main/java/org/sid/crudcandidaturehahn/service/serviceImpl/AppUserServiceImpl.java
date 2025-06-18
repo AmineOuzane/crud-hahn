@@ -70,4 +70,9 @@ public class AppUserServiceImpl implements AppUserService {
         appUserRepository.deleteByUsername(username);
     }
 
+    @Override
+    public AppUser loadUserByUsername(String username) {
+        return appUserRepository.findByUsername(username);
+    }
+
 }

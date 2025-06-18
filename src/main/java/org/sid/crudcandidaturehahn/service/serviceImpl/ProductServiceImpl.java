@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service implementation for managing products.
@@ -37,6 +38,7 @@ public class ProductServiceImpl implements ProductService {
             }
 
             Product product = Product.builder()
+                    .id(UUID.randomUUID().toString())
                     .name(productDTO.getName().trim())
                     .description(productDTO.getDescription())
                     .price(productDTO.getPrice())
@@ -56,10 +58,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDTO getProductById(Long id) {
+    public ProductDTO getProductById(String id) {
 
         return productRepository.findById(id)
                 .map(product -> ProductDTO.builder()
+                        .id(product.getId())
                         .name(product.getName())
                         .description(product.getDescription())
                         .price(product.getPrice())
@@ -72,15 +75,17 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductDTO> getAllProducts() {
         return productRepository.findAll().stream()
                 .map(product -> ProductDTO.builder()
+                        .id(product.getId())
                         .name(product.getName())
                         .description(product.getDescription())
                         .price(product.getPrice())
                         .createdAt(product.getCreatedAt())
                         .build())
-                .toList();    }
+                .toList();
+    }
 
     @Override
-    public ProductDTO updateProduct(Long id, ProductDTO productDTO) {
+    public ProductDTO updateProduct(String id, ProductDTO productDTO) {
 
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
@@ -96,7 +101,7 @@ public class ProductServiceImpl implements ProductService {
 }
 
     @Override
-    public void deleteProduct(Long id) {
+    public void deleteProduct(String id) {
         if (!productRepository.existsById(id)) {
             throw new RuntimeException("Product not found with id: " + id);
         }

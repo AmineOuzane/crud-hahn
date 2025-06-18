@@ -54,7 +54,7 @@ public class ProductController {
         }
 
         @PutMapping("/get-product/{id}")
-        public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @RequestBody ProductDTO productDTO) {
+        public ResponseEntity<ProductDTO> updateProduct(@PathVariable String id, @RequestBody ProductDTO productDTO) {
             try {
                 ProductDTO product = productService.updateProduct(id, productDTO);
                 if (product == null) {
@@ -69,7 +69,7 @@ public class ProductController {
         }
 
         @DeleteMapping("/delete-product/{id}")
-        public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
             try {
                 productService.deleteProduct(id);
                 log.info("Product with ID {} deleted successfully.", id);

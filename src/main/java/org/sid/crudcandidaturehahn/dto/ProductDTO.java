@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class ProductDTO {
+    private String id;
     private String name;
     private String description;
     private double price;
