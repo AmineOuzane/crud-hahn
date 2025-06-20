@@ -53,7 +53,22 @@ public class ProductController {
             }
         }
 
-        @PutMapping("/get-product/{id}")
+        @GetMapping("/get-product/{id}")
+        public ResponseEntity<ProductDTO> getProductById(@PathVariable String id) {
+            try {
+                ProductDTO product = productService.getProductById(id);
+                if (product == null) {
+                    log.warn("Product with ID {} not found.", id);
+                    return ResponseEntity.notFound().build();
+                }
+                log.info("Product with ID {} retrieved successfully: {}", id, product);
+                return ResponseEntity.ok(product);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().build();
+            }
+        }
+
+        @PutMapping("/update-product/{id}")
         public ResponseEntity<ProductDTO> updateProduct(@PathVariable String id, @RequestBody ProductDTO productDTO) {
             try {
                 ProductDTO product = productService.updateProduct(id, productDTO);

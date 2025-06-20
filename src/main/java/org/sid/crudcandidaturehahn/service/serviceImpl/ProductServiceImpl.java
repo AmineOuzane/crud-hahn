@@ -6,6 +6,9 @@ import org.sid.crudcandidaturehahn.dto.ResponseProductDTO;
 import org.sid.crudcandidaturehahn.entities.Product;
 import org.sid.crudcandidaturehahn.repositories.ProductRepository;
 import org.sid.crudcandidaturehahn.service.ProductService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +27,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
 
     @Override
+    @CacheEvict(value = "productsAll", allEntries = true)
+
     public ResponseProductDTO createProduct(ProductDTO productDTO) {
         try {
             // Validate input
@@ -58,6 +63,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "products", key = "#id")
     public ProductDTO getProductById(String id) {
 
         return productRepository.findById(id)
@@ -72,6 +78,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "productsAll")
     public List<ProductDTO> getAllProducts() {
         return productRepository.findAll().stream()
                 .map(product -> ProductDTO.builder()
@@ -85,6 +92,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @CachePut(value = { "products", "productsAll" }, cacheManager = "cacheManager")
     public ProductDTO updateProduct(String id, ProductDTO productDTO) {
 
         Product product = productRepository.findById(id)
@@ -101,6 +109,7 @@ public class ProductServiceImpl implements ProductService {
 }
 
     @Override
+    @Cacheable(value = { "products", "productsAll" }, cacheManager = "cacheManager")
     public void deleteProduct(String id) {
         if (!productRepository.existsById(id)) {
             throw new RuntimeException("Product not found with id: " + id);
