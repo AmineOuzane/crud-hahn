@@ -2,16 +2,18 @@ package org.sid.crudcandidaturehahn.service.serviceImpl;
 
 import lombok.AllArgsConstructor;
 import org.sid.crudcandidaturehahn.dto.ProductDTO;
-import org.sid.crudcandidaturehahn.dto.ResponseProductDTO;
 import org.sid.crudcandidaturehahn.entities.Product;
 import org.sid.crudcandidaturehahn.repositories.ProductRepository;
 import org.sid.crudcandidaturehahn.service.ProductService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,13 +27,13 @@ import java.util.UUID;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
+
 
     @Override
     @CacheEvict(value = "productsAll", allEntries = true)
-
-    public ResponseProductDTO createProduct(ProductDTO productDTO) {
+    public ProductDTO createProduct(ProductDTO productDTO) {
         try {
-            // Validate input
             if (productDTO == null) {
                 throw new IllegalArgumentException("ProductDTO cannot be null");
             }
@@ -47,17 +49,25 @@ public class ProductServiceImpl implements ProductService {
                     .name(productDTO.getName().trim())
                     .description(productDTO.getDescription())
                     .price(productDTO.getPrice())
-                    .createdAt(productDTO.getCreatedAt())
+                    .createdAt(LocalDateTime.now())
                     .build();
-            productRepository.save(product);
 
-            return ResponseProductDTO.builder()
-                    .name(product.getName())
-                    .createdAt(product.getCreatedAt())
+            Product savedProduct = productRepository.save(product);
+
+            return ProductDTO.builder()
+                    .id(savedProduct.getId())
+                    .name(savedProduct.getName())
+                    .description(savedProduct.getDescription())
+                    .price(savedProduct.getPrice())
+                    .createdAt(savedProduct.getCreatedAt())
                     .build();
+
         } catch (IllegalArgumentException e) {
+
+             logger.error("Invalid product data for creation: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
+             logger.error("Error creating product", e);
             throw new RuntimeException("Error creating product: " + e.getMessage());
         }
     }
@@ -80,36 +90,49 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Cacheable(value = "productsAll")
     public List<ProductDTO> getAllProducts() {
-        return productRepository.findAll().stream()
-                .map(product -> ProductDTO.builder()
-                        .id(product.getId())
-                        .name(product.getName())
-                        .description(product.getDescription())
-                        .price(product.getPrice())
-                        .createdAt(product.getCreatedAt())
-                        .build())
-                .toList();
+        try {
+            List<Product> products = productRepository.findAll();
+            if (products.isEmpty()) {
+                return List.of(); // Return empty list instead of null
+            }
+            return products.stream()
+                    .map(product -> ProductDTO.builder()
+                                .id(product.getId())
+                            .name(product.getName())
+                            .description(product.getDescription())
+                            .price(product.getPrice())
+                            .createdAt(product.getCreatedAt())
+                            .build())
+                    .toList();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to retrieve products: " + e.getMessage());
+        }
     }
 
     @Override
     @CachePut(value = { "products", "productsAll" }, cacheManager = "cacheManager")
     public ProductDTO updateProduct(String id, ProductDTO productDTO) {
-
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
 
+        product.setId(id);
         product.setName(productDTO.getName());
         product.setDescription(productDTO.getDescription());
         product.setPrice(productDTO.getPrice());
-        product.setCreatedAt(productDTO.getCreatedAt());
 
-        productRepository.save(product);
+        Product updatedProduct = productRepository.save(product);
 
-        return productDTO;
-}
+        ProductDTO updatedDTO = new ProductDTO();
+        updatedDTO.setId(updatedProduct.getId());
+        updatedDTO.setName(updatedProduct.getName());
+        updatedDTO.setDescription(updatedProduct.getDescription());
+        updatedDTO.setPrice(updatedProduct.getPrice());
+
+        return updatedDTO;
+    }
 
     @Override
-    @Cacheable(value = { "products", "productsAll" }, cacheManager = "cacheManager")
+    @CacheEvict(value = { "products", "productsAll" }, cacheManager = "cacheManager")
     public void deleteProduct(String id) {
         if (!productRepository.existsById(id)) {
             throw new RuntimeException("Product not found with id: " + id);

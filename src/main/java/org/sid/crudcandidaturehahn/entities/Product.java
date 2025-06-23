@@ -24,8 +24,5 @@ public class Product {
     private double price;
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-    @ManyToOne
-    @JoinColumn(name = "app_user_id", nullable = false)
-    private AppUser appUser;
 
 }

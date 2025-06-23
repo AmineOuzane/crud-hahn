@@ -1,5 +1,8 @@
 package org.sid.crudcandidaturehahn.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -21,12 +24,26 @@ public class RedisConfig {
      */
 
     @Bean
-    public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory){
+    public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+
+        // Créer un convertisseur JSON
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        // Lui apprendre à gérer les dates modernes
+        objectMapper.registerModule(new JavaTimeModule());
+
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        // Créer le "sérialiseur" pour Redis en utilisant notre convertisseur
+        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
+
+        // Implmenter le sérialiseur dans la configuration
         RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(2))
                 .disableCachingNullValues()
                 .serializeValuesWith(RedisSerializationContext.SerializationPair
-                        .fromSerializer(new Jackson2JsonRedisSerializer<Object>(Object.class)));
+                        .fromSerializer(serializer));
+
         return RedisCacheManager
                 .builder(connectionFactory)
                 .cacheDefaults(redisCacheConfiguration)

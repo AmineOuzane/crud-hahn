@@ -35,6 +35,7 @@ public class AppUserServiceImpl implements AppUserService {
             throw new IllegalArgumentException("Password must be at least 6 characters long.");
         }
 
+
         if (userDTO.getPhone() == null || !userDTO.getPhone().matches("^\\+?[0-9]{7,15}$")) {
             throw new IllegalArgumentException("Invalid phone number format.");
         }
@@ -47,21 +48,25 @@ public class AppUserServiceImpl implements AppUserService {
         if (appUserRepository.existsByEmail(userDTO.getEmail())) {
             throw new IllegalArgumentException("Email already registered.");
         }
-        String hashedPassword = passwordEncoder.encode(userDTO.getPassword());
-        AppUser newUser = AppUser.builder()
-                .id(UUID.randomUUID().toString())
-                .username(userDTO.getUsername())
-                .password(hashedPassword)
-                .email(userDTO.getEmail())
-                .phone(userDTO.getPhone())
-                .build();
+        if (userDTO.getPassword().equals(userDTO.getConfirmPassword())) {
 
-        appUserRepository.save(newUser);
+            String hashedPassword = passwordEncoder.encode(userDTO.getPassword());
+            AppUser newUser = AppUser.builder()
+                    .id(UUID.randomUUID().toString())
+                    .username(userDTO.getUsername())
+                    .password(hashedPassword)
+                    .email(userDTO.getEmail())
+                    .phone(userDTO.getPhone())
+                    .build();
 
-        return ResponseUserDTO.builder()
-                .username(newUser.getUsername())
-                .email(newUser.getEmail())
-                .build();
+            appUserRepository.save(newUser);
+
+            return ResponseUserDTO.builder()
+                    .username(newUser.getUsername())
+                    .email(newUser.getEmail())
+                    .build();
+        }
+        throw new IllegalArgumentException("Passwords do not match.");
      }
 
 

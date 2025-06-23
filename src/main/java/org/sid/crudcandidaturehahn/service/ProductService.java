@@ -1,7 +1,6 @@
 package org.sid.crudcandidaturehahn.service;
 
 import org.sid.crudcandidaturehahn.dto.ProductDTO;
-import org.sid.crudcandidaturehahn.dto.ResponseProductDTO;
 
 import java.util.List;
 
@@ -12,7 +11,7 @@ import java.util.List;
 
 public interface ProductService {
 
-     ResponseProductDTO createProduct(ProductDTO productDTO);
+     ProductDTO createProduct(ProductDTO productDTO);
      ProductDTO getProductById(String id);
      List<ProductDTO> getAllProducts();
      ProductDTO updateProduct(String id, ProductDTO productDTO);

@@ -18,12 +18,10 @@ public class AppUser {
     private String username;
     @Column(name = "email", nullable = false, unique = true)
     private String email;
-    @Column(name = "first_name", nullable = false)
+    @Column(name = "password", nullable = false)
     private String password;
-    @Column(name = "last_name", nullable = false)
+    @Transient
     private String confirmPassword;
     @Column(name = "phone", nullable = false)
     private String phone;
-    @OneToMany(mappedBy = "appUser")
-    private List<Product> products; // Assuming Product is another entity in your application
 }

@@ -2,11 +2,11 @@ package org.sid.crudcandidaturehahn.web;
 
 import lombok.AllArgsConstructor;
 import org.sid.crudcandidaturehahn.dto.ProductDTO;
-import org.sid.crudcandidaturehahn.dto.ResponseProductDTO;
-import org.sid.crudcandidaturehahn.entities.Product;
+import org.sid.crudcandidaturehahn.repositories.ProductRepository;
 import org.sid.crudcandidaturehahn.service.ProductService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,19 +23,23 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final ProductRepository productRepository;
     private static final Logger log = LoggerFactory.getLogger(ProductController.class);
 
 
     @PostMapping("/create-product")
-    public ResponseEntity<ResponseProductDTO> createProduct(@RequestBody ProductDTO productDTO) {
+    public ResponseEntity<ProductDTO> createProduct(@RequestBody ProductDTO productDTO) {
         try {
-            ResponseProductDTO product = productService.createProduct(productDTO);
-            log.info("Product created successfully: {}", product);
-            return ResponseEntity.ok(product);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+            ProductDTO createdProduct = productService.createProduct(productDTO);
+            log.info("Product created successfully: {}", createdProduct);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
 
+        } catch (IllegalArgumentException e) {
+            // You could return a specific error message if you want
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
         @GetMapping("/list-all-products")
@@ -49,11 +53,20 @@ public class ProductController {
                 log.info("Retrieved {} products.", products.size());
                 return ResponseEntity.ok(products);
             } catch (Exception e) {
-                return ResponseEntity.badRequest().build();
+                // This will print the full error to your Spring console
+                log.error("Failed to retrieve products due to an unexpected error", e);
+                // This sends a more appropriate 500 status code
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
         }
+//    @GetMapping("/list-all-products")
+//    public ResponseEntity<List<Product>> getAllProducts() {
+//        List<Product> products = productRepository.findAll();
+//        return ResponseEntity.ok(products);
+//    }
 
-        @GetMapping("/get-product/{id}")
+
+    @GetMapping("/get-product/{id}")
         public ResponseEntity<ProductDTO> getProductById(@PathVariable String id) {
             try {
                 ProductDTO product = productService.getProductById(id);
@@ -79,18 +92,15 @@ public class ProductController {
                 log.info("Product with ID {} updated successfully: {}", id, product);
                 return ResponseEntity.ok(product);
             } catch (Exception e) {
+                log.error("Error updating product with ID {}: {}", id, e.getMessage(), e);
                 return ResponseEntity.badRequest().build();
             }
         }
 
+
         @DeleteMapping("/delete-product/{id}")
         public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
-            try {
-                productService.deleteProduct(id);
-                log.info("Product with ID {} deleted successfully.", id);
-                return ResponseEntity.noContent().build();
-            } catch (Exception e) {
-                return ResponseEntity.badRequest().build();
-            }
+            productService.deleteProduct(id);
+            return ResponseEntity.noContent().build();
         }
 }

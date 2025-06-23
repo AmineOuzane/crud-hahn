@@ -14,6 +14,6 @@ public class ProductDTO {
     private String id;
     private String name;
     private String description;
-    private double price;
+    private Double price;
     private LocalDateTime createdAt;
 }

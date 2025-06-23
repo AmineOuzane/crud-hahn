@@ -28,7 +28,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class SecurityController {
 
-    private final AppUserRepository appUserRepository;
     private final AppUserService appUserService;
     private final AuthenticationManager authenticationManager;
     private final JwtEncoder jwtEncoder;
